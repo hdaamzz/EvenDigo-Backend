@@ -1,7 +1,7 @@
 
 
 export interface IUser {
-    _id?: string;
+    _id?: string ;
     name:string;
     email:string;
     password:string;
@@ -37,4 +37,18 @@ export interface RegistrationResponse {
  export interface OTPVerificationData {
     userId: string | undefined;
     email: string;
+    name?:string
   }
+
+  export interface ILogin {
+    email: string;
+    password: string;
+  }
+
+  export interface IAuthResponse {
+    success: boolean;
+    message: string;
+    token?: string;
+    user?: Partial<IUser>;
+  }
+

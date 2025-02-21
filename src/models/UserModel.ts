@@ -1,6 +1,6 @@
 import { Document, Schema, model } from "mongoose";
 
-import { IUser } from "src/interfaces/auth.interface";
+import { IUser } from "../interfaces/auth.interface";
 
 const userSchema = new Schema({
     email: {
@@ -30,7 +30,6 @@ const userSchema = new Schema({
     },
     phone: {
         type: String,
-        unique: true,
         optional: true,
         trim: true
     },
@@ -48,6 +47,10 @@ const userSchema = new Schema({
         enum: ['Active', 'Deactive','Blocked'],
         default: 'Active',
         required: true
+    },
+    lastLogin:{
+        type:Date,
+        optional:true
     }
 
 }, {

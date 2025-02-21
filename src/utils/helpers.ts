@@ -10,6 +10,11 @@ export const hashPassword = async (password: string): Promise<string> => {
   return bcryptjs.hash(password, salt);
 };
 
+export const reHash=async(checking:string,current:string):Promise<boolean>=>{
+  const result=await bcryptjs.compare(checking,current)
+  return result
+}
+
 export const sendEmail = async ({ to, subject, text }: {
   to: string;
   subject: string;

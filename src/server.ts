@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config()
 import connectDB from './configs/db';
 import authRouter from "./routes/user/auth.routes";
+import cookieParser from 'cookie-parser';
 const PORT: string | undefined = process.env.PORT;
 
 
@@ -23,7 +24,7 @@ app.use(cors(corsOptions));
 app.use(morgan('dev'));;
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-// app.use(cookieParser());
+app.use(cookieParser());
 
 //Database Connection
 connectDB();

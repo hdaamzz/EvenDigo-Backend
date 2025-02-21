@@ -11,6 +11,8 @@ export class UserRepository{
     
             return savedUser;
         } catch (error: unknown) {
+            console.log(error);
+            
             if (error instanceof MongoError && (error as any).code === 11000) {
                 throw new Error('Email already exists');
             }
@@ -19,7 +21,14 @@ export class UserRepository{
         }
     }
 
+
     async findByEmail(email: string): Promise<IUser | null> {
         return UserModel.findOne({ email });
+    }
+
+    async updateLastLogin(userId: string | undefined): Promise<void> {
+        await UserModel.findByIdAndUpdate(userId, {
+          lastLogin: new Date()
+        });
     }
 }

@@ -1,7 +1,8 @@
 import { AuthRepository } from '../../repositories/auth.repository';
-import { generateOTP, hashPassword, sendEmail } from '../../utils/helpers';
-import { IUser, OTPVerificationData, ServiceResponse } from '../../interfaces/auth.interface';
+import { generateOTP, hashPassword, reHash, sendEmail } from '../../utils/helpers';
+import { IAuthResponse, ILogin, IUser, OTPVerificationData, ServiceResponse } from '../../interfaces/auth.interface';
 import { UserRepository } from '../../repositories/user.repository';
+import * as jwt from 'jsonwebtoken';
 
 export class AuthService {
   private authRepository: AuthRepository;
@@ -10,6 +11,9 @@ export class AuthService {
   constructor() {
     this.authRepository = new AuthRepository();
     this.userRepository = new UserRepository();
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
   }
 
   async sendOTP(userData: IUser): Promise<{ success: boolean; message: string }> {
@@ -85,7 +89,8 @@ export class AuthService {
           message: 'Registration successful',
           data: {
             userId: user._id,
-            email: user.email
+            email: user.email,
+            name:user.name
           }
         };
       } catch (error) {
@@ -102,5 +107,49 @@ export class AuthService {
         message: 'Failed to verify OTP'
       };
     }
+  }
+
+  
+
+  async login(credentials:ILogin):Promise<IAuthResponse>{
+    const user = await this.userRepository.findByEmail(credentials.email);
+
+    if(!user){
+      return{
+        success:false,
+        message:"Invalid email or password"
+      }
+    }
+
+    const isPasswordMatch= await reHash(credentials.password,user.password)
+    if (!isPasswordMatch) {
+      return {
+        success: false,
+        message: "Invalid email or password"
+      };
+    }
+
+    await this.userRepository.updateLastLogin(user._id);
+
+    const token= jwt.sign({
+      userId:user._id,
+      email:user.email,
+      name:user.name
+    },
+      process.env.JWT_SECRET!,
+        { expiresIn: '24h' }
+    );
+
+    const userResponse = {
+      id: user._id,
+      email: user.email,
+      name: user.name
+    };
+    return {
+      success: true,
+      message: 'Login successful',
+      token,
+      user: userResponse
+    };
   }
 }
